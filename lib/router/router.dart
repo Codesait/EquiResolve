@@ -1,4 +1,5 @@
 import 'package:bot_toast/bot_toast.dart';
+import 'package:equiresolve/features/auth/login.dart';
 import 'package:equiresolve/features/intro/splash_screen.dart';
 import 'package:equiresolve/router/route_names.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,16 @@ class AppRouter{
         builder: (BuildContext context, GoRouterState state) {
           return const SplashScreen(
             key: Key('splash-screen-route'),
+          );
+        },
+      ),
+
+      GoRoute(
+        path: '/login',
+        name: NamedRoutes.signIn.name,
+        builder: (BuildContext context, GoRouterState state) {
+          return const LoginScreen(
+            key: Key('login-screen-route'),
           );
         },
       ),
