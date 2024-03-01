@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:equiresolve/features/auth/login.dart';
+import 'package:equiresolve/features/home/home.dart';
 import 'package:equiresolve/features/intro/splash_screen.dart';
 import 'package:equiresolve/router/route_names.dart';
 import 'package:flutter/material.dart';
@@ -35,11 +36,11 @@ class AppRouter{
       ),
 
       GoRoute(
-        path: '/intro',
-        name: NamedRoutes.intro.name,
+        path: '/home',
+        name: NamedRoutes.homePage.name,
         builder: (BuildContext context, GoRouterState state) {
-          return const SplashScreen(
-            key: Key('splash-screen-route'),
+          return const HomePage(
+            key: Key('home-screen-route'),
           );
         },
       ),

@@ -15,7 +15,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   /// The `initApp` function uses a timer to navigate to the sign-in screen after every 3 seconds.
   void initApp() {
-    Timer.periodic(const Duration(seconds: 3), (timer) {
+    Future.delayed(const Duration(seconds: 3), () {
       GoRouter.of(context).pushReplacementNamed(NamedRoutes.signIn.name);
     });
   }
