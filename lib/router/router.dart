@@ -1,13 +1,14 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:equiresolve/features/auth/login.dart';
+import 'package:equiresolve/features/auth/user_auth.dart';
 import 'package:equiresolve/features/home/home.dart';
 import 'package:equiresolve/features/intro/splash_screen.dart';
 import 'package:equiresolve/router/route_names.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class AppRouter{
-    static final GoRouter router = GoRouter(
+class AppRouter {
+  static final GoRouter router = GoRouter(
     observers: [BotToastNavigatorObserver()],
     // navigatorKey: appNavigatorKey,
     initialLocation: '/',
@@ -24,17 +25,24 @@ class AppRouter{
           );
         },
       ),
-
       GoRoute(
         path: '/login',
         name: NamedRoutes.signIn.name,
         builder: (BuildContext context, GoRouterState state) {
-          return const LoginScreen(
+          return const IntroScreen(
             key: Key('login-screen-route'),
           );
         },
       ),
-
+      GoRoute(
+        path: '/auth',
+        name: NamedRoutes.userAuth.name,
+        builder: (BuildContext context, GoRouterState state) {
+          return const UserAuth(
+            key: Key('auth-screen-route'),
+          );
+        },
+      ),
       GoRoute(
         path: '/home',
         name: NamedRoutes.homePage.name,
@@ -44,8 +52,6 @@ class AppRouter{
           );
         },
       ),
-      
     ],
   );
-
 }
