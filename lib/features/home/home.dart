@@ -1,4 +1,6 @@
+import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:equiresolve/service/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final firebaseAuth = FirebaseAuth.instance;
+  final firebaseAuth = AuthService().firebaseAuth;
 
   /// `User` object from the Firebase authentication system
   /// or it can be `null` if no user is currently authenticated.
@@ -20,24 +22,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    firebaseAuth.authStateChanges().listen(
-      (account) {
-        setState(() {
-          user = account!;
-        });
-
-        if (user != null) {
-          if (kDebugMode) {
-            print('Active User ${user!.email!}');
-          }
-        }
-      },
-      onError: (e) {
-        if (kDebugMode) {
-          print('USER ERROR: $e');
-        }
-      },
-    );
+    checkForCurrentUser();
 
     super.initState();
   }
@@ -77,6 +62,41 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void checkForCurrentUser() {
+    BotToast.showLoading();
+    try {
+      firebaseAuth.authStateChanges().listen(
+        (account) {
+          if (account != null) {
+            setState(() {
+              user = account;
+            });
+
+            BotToast.closeAllLoading();
+
+            if (kDebugMode) {
+              print('USER SIGNED IN $user');
+            }
+          }
+        },
+        onDone: () {
+          if (kDebugMode) {
+            print('CHECKING FOR EXISTING USER DONE');
+          }
+        },
+        onError: (e) {
+          if (kDebugMode) {
+            print('SIGN IN ERROR: $e');
+          }
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error $e');
+      }
+    }
+  }
 }
 
 class _UserWidget extends StatelessWidget {
@@ -97,9 +117,13 @@ class _UserWidget extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(100),
             child: CachedNetworkImage(
-              imageUrl: userDetails.photoURL!,
+              imageUrl: userDetails.photoURL ?? '',
               height: 10,
               fit: BoxFit.cover,
+              errorWidget: (context, url, error) => CircleAvatar(
+                backgroundColor: Colors.purple.withOpacity(.2),
+                child: const Icon(Icons.person),
+              ),
             ),
           ),
         ),

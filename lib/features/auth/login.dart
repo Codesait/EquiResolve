@@ -25,7 +25,6 @@ class _IntroScreenState extends State<IntroScreen> {
   /// or it can be `null` if no user is currently authenticated.
   User? user;
 
-  final googleAuth = GoogleAuthProvider();
 
   //
   void checkForCurrentUser() {
@@ -48,15 +47,6 @@ class _IntroScreenState extends State<IntroScreen> {
                 NamedRoutes.homePage.name,
               );
             });
-
-            if (kDebugMode) {
-              print('USER SIGNED IN $user');
-            }
-          }
-        },
-        onDone: () {
-          if (kDebugMode) {
-            print('CHECKING FOR EXISTING USER DONE');
           }
         },
         onError: (e) {
@@ -75,7 +65,7 @@ class _IntroScreenState extends State<IntroScreen> {
   @override
   void initState() {
     super.initState();
-    //checkForCurrentUser();
+    checkForCurrentUser();
   }
 
   @override
@@ -90,7 +80,7 @@ class _IntroScreenState extends State<IntroScreen> {
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: SingleChildScrollView(
-            child: !checkingUser
+            child: checkingUser
                 ? Column(
                     children: [
                       const CircularProgressIndicator(),

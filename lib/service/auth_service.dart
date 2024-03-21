@@ -10,14 +10,18 @@ class AuthService {
 
   get user => firebaseAuth.currentUser;
 
-  void showSnackbarMessage(BuildContext context, String message) {
+  void showSnackbarMessage(
+    BuildContext context,
+    String message, {
+    bool isError = false,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: isError ? Colors.red : Colors.green,
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.only(bottom: 600, right: 20, left: 20),
+        margin: const EdgeInsets.only(bottom: 100, right: 20, left: 20),
       ),
     );
   }
@@ -27,13 +31,12 @@ class AuthService {
       {required String email, required String password}) async {
     BotToast.showLoading();
     try {
-      await firebaseAuth.createUserWithEmailAndPassword(
+      return await firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return null;
     } on FirebaseAuthException catch (e) {
-      onError(e, context);
+      showSnackbarMessage(context, e.message!, isError: true);
       return e.message;
     }
   }
@@ -43,11 +46,10 @@ class AuthService {
       {required String email, required String password}) async {
     BotToast.showLoading();
     try {
-      await firebaseAuth.signInWithEmailAndPassword(
+      return await firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
-      return null;
     } on FirebaseAuthException catch (e) {
-      onError(e, context);
+      showSnackbarMessage(context, e.message!, isError: true);
       return e.message;
     }
   }

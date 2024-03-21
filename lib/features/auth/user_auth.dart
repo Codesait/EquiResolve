@@ -2,6 +2,7 @@
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:equiresolve/app/color.dart';
+import 'package:equiresolve/router/route_names.dart';
 import 'package:equiresolve/service/auth_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -176,12 +177,11 @@ class _UserAuthState extends State<UserAuth> {
 
   void signIn() {
     AuthService()
-        .signIn(
-      context,
-      email: emailController!.text.trim(),
-      password: passwordController!.text.trim(),
-    )
+        .signIn(context,
+            email: emailController!.text.trim(),
+            password: passwordController!.text.trim())
         .then((value) {
+      context.pushReplacement(NamedRoutes.homePage.name);
       if (kDebugMode) {
         print(value);
       }
@@ -192,14 +192,14 @@ class _UserAuthState extends State<UserAuth> {
 
   void signUp() {
     AuthService()
-        .signUp(
-      context,
-      email: emailController!.text.trim(),
-      password: passwordController!.text.trim(),
-    )
+        .signUp(context,
+            email: emailController!.text.trim(),
+            password: passwordController!.text.trim())
         .then((value) {
+          
+      context.pushReplacement(NamedRoutes.homePage.name);
       if (kDebugMode) {
-        print(value);
+        print('val: $value');
       }
     }).whenComplete(() {
       BotToast.closeAllLoading();
