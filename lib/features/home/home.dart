@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:equiresolve/service/auth_service.dart';
@@ -30,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    TextEditingController passwordController = TextEditingController();
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
@@ -56,7 +59,63 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () {
+          showModalBottomSheet(
+            backgroundColor: Colors.blue,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(0.0)),
+              ),
+              constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height * 0.6),
+              context: context, builder: (BuildContext context){
+            return  Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Container(
+              height: size.height * .7,
+              width: size.width,
+              color: Colors.white,
+              padding:const EdgeInsets.symmetric(horizontal: 20),
+              child:  Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Report', style: GoogleFonts.poppins(color: Colors.black, fontSize:20, fontWeight: FontWeight.bold),),
+                      IconButton(onPressed: (){Navigator.pop(context);}, icon: const Icon(Icons.cancel_sharp))
+                    ],
+                  ),
+                  const SizedBox(height: 20.0,),
+                  CustomTextField(
+                    controller: passwordController,
+                    hintText: 'Title',
+                  ),
+                  const SizedBox(height: 20.0,),
+                  CustomTextField(
+                    controller: passwordController,
+                    hintText: 'Description (optional)',
+                    maxLines: 10,
+                  ),
+                  const SizedBox(height: 20.0,),
+                  CustomTextField(
+                    controller: passwordController,
+                    prefix: const Icon(Icons.location_on),
+                    hintText: 'location picked'
+                  ),
+                  const SizedBox(height: 20.0,),
+                  Container(
+                    height: 50,
+                    width: size.width / 1.2,
+                    decoration: BoxDecoration(color: Colors.purple,borderRadius: BorderRadius.circular(15)),
+                    child: Center(child: Text('Submit report', style: GoogleFonts.poppins(color:Colors.white,fontSize: 15, fontWeight: FontWeight.bold),)),
+                  )
+                ],
+
+              ),
+            ),
+          );
+            },
+              isScrollControlled: true
+          );
+        },
         icon: const Icon(Icons.report),
         label: const Text('Report'),
       ),
@@ -169,6 +228,110 @@ class _Reports extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+
+class CustomTextField extends StatelessWidget {
+
+  const CustomTextField({
+    Key? key,
+    required this.controller,
+    this.hintText,
+    this.prefix,
+    this.suffixIcon,
+    this.labelText,
+    this.validator,
+    this.obscureText,
+    this.readOnly = false,
+    this.autoFocus = false,
+    this.inputType,
+    this.maxLines = 1,
+    this.maxLength,
+    this.focusNode,
+    this.onChange,
+    this.fillColor,
+    this.onTap,
+    this.prefixColor,
+    this.fontSize
+  }) : super(key: key);
+  final TextEditingController controller;
+  final String? hintText;
+  final Widget? prefix;
+  final Widget? suffixIcon;
+  final String? labelText;
+  final FormFieldValidator<String>? validator;
+  final bool? obscureText;
+  final TextInputType? inputType;
+  final bool readOnly;
+  final bool autoFocus;
+  final int? maxLines;
+  final int? maxLength;
+  final FocusNode? focusNode;
+  final void Function()? onTap;
+  final Function(String? val)? onChange;
+  final Color? fillColor;
+  final Color? prefixColor;
+  final double? fontSize;
+
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      validator: validator,
+      readOnly: readOnly,
+      autofocus: autoFocus,
+      onChanged: onChange,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      focusNode: focusNode,
+      obscureText: obscureText ?? false,
+      onTap: onTap,
+      style:  Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: fontSize ?? 14),
+      keyboardType: inputType,
+      cursorColor: Colors.grey,
+      decoration: InputDecoration(
+          hintStyle: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.grey,
+              fontSize: fontSize ?? 14
+          ),
+          counterStyle: const TextStyle(
+              color: Colors.grey,
+              fontSize: 12,
+              fontWeight: FontWeight.w500
+          ),
+          hintText: hintText,
+          prefixIcon: prefix,
+          prefixIconColor: prefixColor ?? MaterialStateColor.resolveWith(
+                (states) => states.contains(MaterialState.focused)
+                ? Colors.black
+                : const Color(0xFF9E9E9E),
+          ),
+          suffixIcon: suffixIcon,
+          suffixIconColor: MaterialStateColor.resolveWith(
+                (states) => states.contains(MaterialState.focused)
+                ? Colors.black
+                : const Color(0xFF9E9E9E),
+          ),
+          labelText: labelText,
+          labelStyle: const TextStyle(color: Color(0xFF9E9E9E), fontSize: 15),
+          contentPadding:
+          const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          enabledBorder:  OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.purple.withOpacity(.5), width: 1.0),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+          ),
+          focusedBorder:  OutlineInputBorder(
+            borderSide: readOnly || maxLength != null ? BorderSide.none : const BorderSide(color: Colors.purple, width: 2.0),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
+          ),
+          filled: true,
+          fillColor: fillColor ?? Colors.white),
     );
   }
 }
