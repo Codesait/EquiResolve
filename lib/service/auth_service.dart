@@ -10,6 +10,9 @@ class AuthService {
 
   get user => firebaseAuth.currentUser;
 
+  User? _appUser;
+  User? get appUser => _appUser;
+
   void showSnackbarMessage(
     BuildContext context,
     String message, {
@@ -78,6 +81,42 @@ class AuthService {
     await firebaseAuth.signOut();
     if (kDebugMode) {
       print('signout');
+    }
+  }
+
+  Future<void> checkForCurrentUser() async {
+    BotToast.showLoading();
+    try {
+      firebaseAuth.authStateChanges().listen(
+        (account) {
+          if (account != null) {
+            _appUser = account;
+
+            BotToast.closeAllLoading();
+
+            if (kDebugMode) {
+              print('USER SIGNED IN $user');
+            }
+          }
+        },
+        onDone: () {
+          if (kDebugMode) {
+            print('CHECKING FOR EXISTING USER DONE');
+          }
+          BotToast.closeAllLoading();
+        },
+        onError: (e) {
+          if (kDebugMode) {
+            print('SIGN IN ERROR: $e');
+          }
+          BotToast.closeAllLoading();
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error $e');
+      }
+      BotToast.closeAllLoading();
     }
   }
 }
