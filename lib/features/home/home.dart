@@ -1,12 +1,16 @@
 // ignore_for_file: slash_for_doc_comments
 
+import 'dart:developer';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:equiresolve/service/auth_service.dart';
+import 'package:equiresolve/service/location.dart';
 import 'package:equiresolve/service/report.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
@@ -21,6 +25,8 @@ class _HomePageState extends State<HomePage> {
 
   final formKey = GlobalKey<FormState>();
 
+  List<dynamic> _reports = [];
+
   /**
     report entry controllers
    */
@@ -33,15 +39,46 @@ class _HomePageState extends State<HomePage> {
   User? user;
 
   final reportService = Report();
+  final locationService = EQLocationService();
+
+  String? _currentAddress;
+  Position? _currentPosition;
+
+  Future<void> initDash() async {
+    /**
+      sget user first
+     */
+    await checkForCurrentUser();
+
+    /**
+      start fetching report made by
+      existing user
+     */
+    BotToast.showLoading();
+    await reportService.fetchReportByUser(user!.email!).then((value) {
+      setState(() {
+        _reports = value;
+      });
+      BotToast.closeAllLoading();
+    });
+  }
 
   @override
   void initState() {
-    checkForCurrentUser();
     titleController = TextEditingController();
     descController = TextEditingController();
     locationController = TextEditingController();
+
+    locationService.handleLocationPermission(context);
+    initDash();
     super.initState();
   }
+
+  // @override
+  // void didChangeDependencies() {
+
+  //   super.didChangeDependencies();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +99,11 @@ class _HomePageState extends State<HomePage> {
                         flex: 2,
                         child: _UserWidget(userDetails: user!),
                       ),
-                      const Expanded(
+                      Expanded(
                         flex: 7,
-                        child: _Reports(),
+                        child: _Reports(
+                          reports: _reports,
+                        ),
                       )
                     ],
                   )
@@ -82,7 +121,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void checkForCurrentUser() {
+  Future<dynamic> checkForCurrentUser() async {
     BotToast.showLoading();
     try {
       firebaseAuth.authStateChanges().listen(
@@ -178,6 +217,33 @@ class _HomePageState extends State<HomePage> {
                         controller: descController!,
                         hintText: 'Description (optional)',
                         maxLines: 10,
+                      ),
+                      const SizedBox(
+                        height: 20.0,
+                      ),
+
+                      SizedBox(
+                        width: size.width,
+                        height: 35,
+                        child: TextButton(
+                          onPressed: () {
+                            locationService
+                                .getCurrentPosition(context)
+                                .then((value) {
+                              log(value.toString());
+                            });
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                          child: const Text(
+                            'Get Location',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
                       const SizedBox(
                         height: 20.0,
@@ -286,7 +352,8 @@ class _UserWidget extends StatelessWidget {
 }
 
 class _Reports extends StatelessWidget {
-  const _Reports();
+  const _Reports({required this.reports});
+  final List<dynamic> reports;
 
   @override
   Widget build(BuildContext context) {
@@ -298,18 +365,88 @@ class _Reports extends StatelessWidget {
         vertical: 10,
       ),
       color: Colors.grey.withOpacity(.2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'My reports',
-            style: GoogleFonts.aBeeZee(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
+      child: reports.isEmpty
+          ? Center(
+              child: Text(
+                'No reports',
+                style: GoogleFonts.aBeeZee(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My reports',
+                  style: GoogleFonts.aBeeZee(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox.square(dimension: 20),
+                Container(
+                  height: size.height / 1.5,
+                  width: size.width,
+                  child: ListView.builder(
+                      itemCount: reports.length,
+                      itemBuilder: (context, int i) {
+                        final report = reports[i];
+                        return ListTile(
+                          style: ListTileStyle.list,
+                          leading: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: report['reportStatus'] != 'AWAITING'
+                                  ? Colors.green.withOpacity(.5)
+                                  : Colors.red.withOpacity(.5),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const SizedBox.square(
+                              dimension: 40,
+                              child: Icon(
+                                Icons.report,
+                                size: 25,
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            report['title'],
+                            style: GoogleFonts.aBeeZee(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                report['reportDescription'] ?? 'No Description',
+                                maxLines: 5,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.aBeeZee(
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox.square(dimension: 7),
+                              Text(
+                                ' status: ${report['reportStatus']} -',
+                                style: GoogleFonts.aBeeZee(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  backgroundColor:
+                                      report['reportStatus'] != 'AWAITING'
+                                          ? Colors.green.withOpacity(.5)
+                                          : Colors.red.withOpacity(.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                )
+              ],
             ),
-          )
-        ],
-      ),
     );
   }
 }

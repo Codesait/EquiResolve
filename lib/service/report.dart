@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -39,6 +40,7 @@ class Report {
         BotToast.closeAllLoading();
         context.pop();
         showToast(msg: 'Report Created');
+        fetchReportByUser(user);
       });
       return true; // Indicate success
     } catch (e) {
@@ -49,30 +51,41 @@ class Report {
     }
   }
 
-  Future<List<dynamic>> getReportsByUser(String user) async {
+  Future<List<dynamic>> fetchReportByUser(String user) async {
     try {
-      DataSnapshot dataSnapshot = (await _databaseReference
-          .orderByChild('user')
-          .equalTo(user)
-          .once()) as DataSnapshot;
+      // Create a query to fetch reports where 'user' field matches userId
+      final query = _databaseReference.orderByChild('user').equalTo(user);
 
-      if (dataSnapshot.value != null) {
-        Map<dynamic, dynamic> reportsMap =
-            dataSnapshot.value as Map<dynamic, dynamic>;
+      // Get a snapshot of the query results
+      final querySnapshot = await query.get();
 
-        List<dynamic> reports = [];
-        reportsMap.forEach((key, value) {
-          reports.add({
-            'id': key,
-            ...value['data'],
-          });
+      /// cast the `value` property of the
+      /// `querySnapshot` object to a `Map<dynamic, dynamic>` type.
+      Map<dynamic, dynamic> reportsMap =
+          querySnapshot.value as Map<dynamic, dynamic>;
+
+      List<dynamic> reports = [];
+
+      reportsMap.forEach((key, value) {
+        reports.add({
+          'id': key,
+          ...value['data'],
         });
-        return reports;
-      } else {
-        return []; // No reports found for the user
+      });
+
+      if (kDebugMode) {
+        log('REPORTS $reports');
       }
+
+      if (kDebugMode) {
+        print(querySnapshot.value.toString());
+      }
+
+      // Return the list of documents as QueryDocumentSnapshot
+      return reports;
     } catch (e) {
-      return []; // Return empty list in case of error
+      log('FETCH REPORT BY USER ERROR: ${e.toString()}');
+      rethrow; // Rethrow the error for handling in the UI
     }
   }
 
