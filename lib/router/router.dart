@@ -10,7 +10,6 @@ import 'package:go_router/go_router.dart';
 class AppRouter {
   static final GoRouter router = GoRouter(
     observers: [BotToastNavigatorObserver()],
-    // navigatorKey: appNavigatorKey,
     initialLocation: '/',
     errorBuilder: (context, state) => const SizedBox(
       child: Text('Error'),

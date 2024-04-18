@@ -1,7 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
 
+import 'package:bot_toast/bot_toast.dart';
+import 'package:equiresolve/service/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 
 class EQLocationService {
@@ -11,13 +15,26 @@ class EQLocationService {
   static EQLocationService? _instance;
 
   Future<dynamic> getCurrentPosition(BuildContext context) async {
+    AuthService().customLoader();
     try {
       final hasPermission = await handleLocationPermission(context);
       if (!hasPermission) return;
       return await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high);
+        desiredAccuracy: LocationAccuracy.high,
+      ).whenComplete(() => BotToast.closeAllLoading());
     } catch (e) {
       debugPrint(e.toString());
+    }
+  }
+
+  Future<dynamic> getAddressFromLatLng(Position position) async {
+    try {
+      return placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
+    } catch (e) {
+      log(e.toString());
     }
   }
 

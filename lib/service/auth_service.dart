@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -77,11 +79,17 @@ class AuthService {
   }
 
   //SIGN OUT METHOD
-  Future signOut() async {
-    await firebaseAuth.signOut();
-    if (kDebugMode) {
-      print('signout');
+  Future signOut(BuildContext context) async {
+    try {
+      return await firebaseAuth.signOut();
+    } catch (e) {
+      if (kDebugMode) {
+        log('signout error: $e');
+      }
     }
+    
+    
+    
   }
 
   Future<void> checkForCurrentUser() async {
@@ -118,5 +126,25 @@ class AuthService {
       }
       BotToast.closeAllLoading();
     }
+  }
+
+  void customLoader() {
+    BotToast.showCustomLoading(toastBuilder: (_) {
+      return Container(
+        height: 130,
+        padding: const EdgeInsets.all(9),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('...getting location data'),
+          ],
+        ),
+      );
+    });
   }
 }

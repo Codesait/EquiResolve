@@ -22,6 +22,7 @@ class Report {
     required String longitude,
     required String latitude,
     required String title,
+    String? address,
     String? reportDescription,
   }) async {
     BotToast.showLoading();
@@ -33,6 +34,7 @@ class Report {
           'reportDescription': reportDescription,
           'longitude': longitude,
           'latitude': latitude,
+          'address': address,
           'reportStatus': 'AWAITING',
           'createdAt': DateTime.now().toString(),
         },
@@ -40,7 +42,6 @@ class Report {
         BotToast.closeAllLoading();
         context.pop();
         showToast(msg: 'Report Created');
-        fetchReportByUser(user);
       });
       return true; // Indicate success
     } catch (e) {
@@ -52,6 +53,7 @@ class Report {
   }
 
   Future<List<dynamic>> fetchReportByUser(String user) async {
+    List<dynamic> reports = [];
     try {
       // Create a query to fetch reports where 'user' field matches userId
       final query = _databaseReference.orderByChild('user').equalTo(user);
@@ -61,20 +63,23 @@ class Report {
 
       /// cast the `value` property of the
       /// `querySnapshot` object to a `Map<dynamic, dynamic>` type.
-      Map<dynamic, dynamic> reportsMap =
-          querySnapshot.value as Map<dynamic, dynamic>;
 
-      List<dynamic> reports = [];
+      if (querySnapshot.value != null) {
+        Map<dynamic, dynamic> reportsMap =
+            querySnapshot.value as Map<dynamic, dynamic>;
 
-      reportsMap.forEach((key, value) {
-        reports.add({
-          'id': key,
-          ...value['data'],
+        
+
+        reportsMap.forEach((key, value) {
+          reports.add({
+            'id': key,
+            ...value['data'],
+          });
         });
-      });
 
-      if (kDebugMode) {
-        log('REPORTS $reports');
+        if (kDebugMode) {
+          log('REPORTS $reports');
+        }
       }
 
       if (kDebugMode) {

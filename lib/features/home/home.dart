@@ -4,13 +4,16 @@ import 'dart:developer';
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:equiresolve/router/route_names.dart';
 import 'package:equiresolve/service/auth_service.dart';
 import 'package:equiresolve/service/location.dart';
 import 'package:equiresolve/service/report.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class HomePage extends StatefulWidget {
@@ -32,7 +35,6 @@ class _HomePageState extends State<HomePage> {
    */
   TextEditingController? titleController;
   TextEditingController? descController;
-  TextEditingController? locationController;
 
   /// `User` object from the Firebase authentication system
   /// or it can be `null` if no user is currently authenticated.
@@ -67,18 +69,16 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     titleController = TextEditingController();
     descController = TextEditingController();
-    locationController = TextEditingController();
-
-    locationService.handleLocationPermission(context);
     initDash();
+
     super.initState();
   }
 
-  // @override
-  // void didChangeDependencies() {
-
-  //   super.didChangeDependencies();
-  // }
+  @override
+  void didChangeDependencies() {
+    locationService.handleLocationPermission(context);
+    super.didChangeDependencies();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,35 +86,40 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: SizedBox(
-            height: size.height,
-            width: size.width,
-            child: user != null
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: _UserWidget(userDetails: user!),
-                      ),
-                      Expanded(
-                        flex: 7,
-                        child: _Reports(
-                          reports: _reports,
+        child: RefreshIndicator(
+          onRefresh: () {
+            return initDash();
+          },
+          child: SingleChildScrollView(
+            child: SizedBox(
+              height: size.height,
+              width: size.width,
+              child: user != null
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: _UserWidget(userDetails: user!),
                         ),
-                      )
-                    ],
-                  )
-                : const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                        Expanded(
+                          flex: 7,
+                          child: _Reports(
+                            reports: _reports,
+                          ),
+                        )
+                      ],
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+            ),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showReportModal(),
+        onPressed: () => showReportModal(size),
         icon: const Icon(Icons.report),
         label: const Text('Report'),
       ),
@@ -156,19 +161,16 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void showReportModal() {
+  void showReportModal(Size size) {
     showModalBottomSheet(
         backgroundColor: Colors.blue,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(0.0)),
         ),
-        constraints:
-            BoxConstraints(minHeight: MediaQuery.of(context).size.height * 0.6),
+        constraints: BoxConstraints(minHeight: size.height * 0.6),
         context: context,
         builder: (BuildContext context) {
-          final size = MediaQuery.of(context).size;
-
-          return StatefulBuilder(builder: (context, state) {
+          return StatefulBuilder(builder: (context, updateState) {
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -226,55 +228,86 @@ class _HomePageState extends State<HomePage> {
                         width: size.width,
                         height: 35,
                         child: TextButton(
-                          onPressed: () {
-                            locationService
+                          onPressed: () async {
+                            await locationService
                                 .getCurrentPosition(context)
                                 .then((value) {
+                              updateState(() {
+                                _currentPosition = value;
+                              });
+
+                              //* log positions
                               log(value.toString());
+                            });
+
+                            //*use positions to get address
+                            await locationService
+                                .getAddressFromLatLng(_currentPosition!)
+                                .then((value) {
+                              final placemarks = value as List<Placemark>;
+
+                              Placemark place = placemarks[0];
+                              updateState(() {
+                                _currentAddress =
+                                    '${place.street}, ${place.subLocality} ${place.subAdministrativeArea}, ${place.postalCode}';
+                              });
+
+                              /** 
+                                then log address
+                              */
+                              log(_currentAddress!);
                             });
                           },
                           style: TextButton.styleFrom(
-                            backgroundColor: Colors.red,
+                            backgroundColor: _currentPosition != null
+                                ? Colors.green
+                                : Colors.red,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(3),
                             ),
                           ),
-                          child: const Text(
-                            'Get Location',
-                            style: TextStyle(color: Colors.white),
+                          child: Text(
+                            _currentAddress != null
+                                ? _currentAddress!
+                                : _currentPosition != null
+                                    ? 'Location Picked'
+                                    : 'Get My Location',
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ),
                       ),
+
                       const SizedBox(
                         height: 20.0,
                       ),
-                      CustomTextField(
-                        controller: locationController!,
-                        prefix: const Icon(Icons.location_on),
-                        hintText: 'location picked',
-                        validator: (value) {
-                          return value != null ? null : 'required';
-                        },
-                      ),
-                      const SizedBox(
-                        height: 20.0,
-                      ),
+
                       InkWell(
                         onTap: () {
-                          if (titleController!.text.isNotEmpty) {
-                            reportService.createReport(
-                              context,
-                              user: user!.email!,
-                              longitude: 'longitude',
-                              latitude: 'latitude',
-                              title: titleController!.text.trim(),
-                              reportDescription: descController!.text.trim(),
-                            );
-                          } else {
+                          if (titleController!.text.isEmpty) {
                             reportService.showToast(
-                              msg: 'Some fields are required',
+                              msg: 'Report title is required',
                               isError: true,
                             );
+                          } else if (_currentPosition == null) {
+                            reportService.showToast(
+                              msg: 'Location is required',
+                              isError: true,
+                            );
+                          } else {
+                            reportService
+                                .createReport(
+                              context,
+                              user: user!.email!,
+                              longitude: _currentPosition!.longitude.toString(),
+                              latitude: _currentPosition!.latitude.toString(),
+                              address: _currentAddress,
+                              title: titleController!.text.trim(),
+                              reportDescription: descController!.text.trim(),
+                            )
+                                .whenComplete(() {
+                              _currentPosition = null;
+                              _currentAddress = null;
+                            });
                           }
                         },
                         child: Container(
@@ -346,6 +379,33 @@ class _UserWidget extends StatelessWidget {
           style: GoogleFonts.poppins(
               color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold),
         ),
+        const SizedBox.square(dimension: 10),
+        SizedBox(
+          width: 130,
+          child: ElevatedButton(
+            onPressed: () {
+              AuthService().signOut(context).then((value) {
+                context.pushReplacementNamed(NamedRoutes.signIn.name);
+              });
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Logout ',
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                Icon(
+                  Icons.exit_to_app_rounded,
+                  color: Colors.white,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox.square(dimension: 10),
       ],
     );
   }
@@ -387,8 +447,9 @@ class _Reports extends StatelessWidget {
                 ),
                 const SizedBox.square(dimension: 20),
                 Container(
-                  height: size.height / 1.5,
+                  height: size.height / 1.6,
                   width: size.width,
+                  padding: const EdgeInsets.only(bottom: 50),
                   child: ListView.builder(
                       itemCount: reports.length,
                       itemBuilder: (context, int i) {
