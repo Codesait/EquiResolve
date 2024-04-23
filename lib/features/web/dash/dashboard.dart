@@ -210,7 +210,7 @@ class __MapWidgetState extends State<_MapWidget> {
       onMapCreated: (controller) => _onMapCreated(controller),
       initialCameraPosition: CameraPosition(
         target: _center,
-        zoom: 11.0,
+        zoom: 7.0,
       ),
       markers: markers,
     );
