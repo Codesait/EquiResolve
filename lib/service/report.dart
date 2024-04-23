@@ -12,7 +12,6 @@ class Report {
   Report._();
   static Report? _instance;
 
-  late DatabaseReference databaseReference;
   final DatabaseReference _databaseReference =
       FirebaseDatabase.instance.ref().child('reports');
 
@@ -68,8 +67,6 @@ class Report {
         Map<dynamic, dynamic> reportsMap =
             querySnapshot.value as Map<dynamic, dynamic>;
 
-        
-
         reportsMap.forEach((key, value) {
           reports.add({
             'id': key,
@@ -87,6 +84,46 @@ class Report {
       }
 
       // Return the list of documents as QueryDocumentSnapshot
+      return reports;
+    } catch (e) {
+      log('FETCH REPORT BY USER ERROR: ${e.toString()}');
+      rethrow; // Rethrow the error for handling in the UI
+    }
+  }
+
+  Future<List<dynamic>> fetchAllReports() async {
+    List<dynamic> reports = [];
+
+    try {
+      BotToast.showLoading();
+
+      //* subcribe to firebase real-time db
+      _databaseReference.onValue.listen((event) {
+        DataSnapshot dataSnapshot = event.snapshot;
+        Map<dynamic, dynamic> values =
+            dataSnapshot.value as Map<dynamic, dynamic>;
+
+        if (values.isNotEmpty) {
+          BotToast.closeAllLoading();
+          values.forEach((key, value) {
+            reports.add({
+              'id': key,
+              ...value['data'],
+            });
+
+            log('Key: $key');
+            log('Data: ${values['data']}');
+          });
+
+          if (kDebugMode) {
+            log('REPORTS $reports');
+          }
+        }
+      }).onError((e) {
+        showToast(msg: 'Fetch Report Error: $e', isError: true);
+      });
+
+      //* Return the list of documents as QueryDocumentSnapshot
       return reports;
     } catch (e) {
       log('FETCH REPORT BY USER ERROR: ${e.toString()}');

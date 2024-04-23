@@ -4,5 +4,6 @@ enum NamedRoutes {
   intro,
   userAuth,
   homePage,
+  dashboard,
   settings,
 }

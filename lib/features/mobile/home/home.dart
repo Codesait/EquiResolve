@@ -84,44 +84,49 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () {
-            return initDash();
-          },
-          child: SingleChildScrollView(
-            child: SizedBox(
-              height: size.height,
-              width: size.width,
-              child: user != null
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: _UserWidget(userDetails: user!),
-                        ),
-                        Expanded(
-                          flex: 7,
-                          child: _Reports(
-                            reports: _reports,
+    return PopScope(
+      onPopInvoked: (didPop) {
+        context.pushReplacementNamed(NamedRoutes.splash.name);
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: () {
+              return initDash();
+            },
+            child: SingleChildScrollView(
+              child: SizedBox(
+                height: size.height,
+                width: size.width,
+                child: user != null
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: _UserWidget(userDetails: user!),
                           ),
-                        )
-                      ],
-                    )
-                  : const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                          Expanded(
+                            flex: 7,
+                            child: _Reports(
+                              reports: _reports,
+                            ),
+                          )
+                        ],
+                      )
+                    : const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+              ),
             ),
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showReportModal(size),
-        icon: const Icon(Icons.report),
-        label: const Text('Report'),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => showReportModal(size),
+          icon: const Icon(Icons.report),
+          label: const Text('Report'),
+        ),
       ),
     );
   }
