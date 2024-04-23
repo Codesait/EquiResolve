@@ -139,7 +139,7 @@ class __AllReportsState extends State<_AllReports> {
                       ),
                       const SizedBox.square(dimension: 10),
                       Text(
-                        'location:${e['longitude']}, ${e['latitude']}',
+                        'location: ${e['longitude']}, ${e['latitude']}',
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.normal,
@@ -166,24 +166,61 @@ class _MapWidget extends StatefulWidget {
 }
 
 class __MapWidgetState extends State<_MapWidget> {
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  late GoogleMapController mapController;
+
+  final LatLng _center = const LatLng(
+    8.9759323,
+    7.1778177,
+  );
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
   }
 
   @override
   Widget build(BuildContext context) {
-    return const GoogleMap(
+    Set<Marker> markers = {};
+
+    ///* This code snippet is iterating over the list of reports stored in `widget.reports`. For each
+    ///* `reportItem` in the reports list, it extracts the `title`, `latitude`, `longitude`, and `id`
+    ///* values. If any of these values are `null`, it provides default values (`'Unknown Title'` for
+    ///* title, `0.0` for latitude and longitude, and an empty string for id) using the null-aware
+    ///* operator `??`.
+    for (var reportItem in widget.reports) {
+      String title = reportItem['title'] ?? 'Unknown Title';
+      var latitude = reportItem['latitude'];
+      var longitude = reportItem['longitude'];
+      String id = reportItem['id'] ?? '';
+
+      print('$latitude, $longitude');
+
+      setState(() {
+        markers.add(
+          Marker(
+            markerId: MarkerId(id),
+            position:
+                LatLng(convertPosition(latitude), convertPosition(longitude)),
+            infoWindow: InfoWindow(title: title),
+          ),
+        );
+      });
+    }
+
+    return GoogleMap(
+      onMapCreated: (controller) => _onMapCreated(controller),
       initialCameraPosition: CameraPosition(
-        target: LatLng(-33.86, 151.20),
+        target: _center,
         zoom: 11.0,
       ),
-      markers: {
-        Marker(
-          markerId: MarkerId('Sydney'),
-          position: LatLng(-33.86, 151.20),
-        ),
-      },
+      markers: markers,
     );
+  }
+
+  double convertPosition(var data) {
+    if (data is String) {
+      return double.parse(data);
+    } else {
+      return data;
+    }
   }
 }

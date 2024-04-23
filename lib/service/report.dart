@@ -111,12 +111,10 @@ class Report {
               ...value['data'],
             });
 
-            log('Key: $key');
-            log('Data: ${values['data']}');
           });
 
           if (kDebugMode) {
-            log('REPORTS $reports');
+            print('REPORTS $reports');
           }
         }
       }).onError((e) {
