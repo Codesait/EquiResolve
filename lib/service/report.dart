@@ -12,7 +12,7 @@ class Report {
   Report._();
   static Report? _instance;
 
-  final DatabaseReference _databaseReference =
+  final DatabaseReference databaseReference =
       FirebaseDatabase.instance.ref().child('reports');
 
   Future<dynamic> createReport(
@@ -26,9 +26,10 @@ class Report {
   }) async {
     BotToast.showLoading();
     try {
-      await _databaseReference.push().set({
+      await databaseReference.push().set({
         'user': user,
         'data': {
+          'uniqueId': UniqueKey().toString() + UniqueKey().toString(),
           'title': title,
           'reportDescription': reportDescription,
           'longitude': longitude,
@@ -55,7 +56,7 @@ class Report {
     List<dynamic> reports = [];
     try {
       // Create a query to fetch reports where 'user' field matches userId
-      final query = _databaseReference.orderByChild('user').equalTo(user);
+      final query = databaseReference.orderByChild('user').equalTo(user);
 
       // Get a snapshot of the query results
       final querySnapshot = await query.get();
@@ -91,60 +92,31 @@ class Report {
     }
   }
 
-  Future<List<dynamic>> fetchAllReports() async {
-    List<dynamic> reports = [];
-
-    try {
-      BotToast.showLoading();
-
-      //* subcribe to firebase real-time db
-      _databaseReference.onValue.listen((event) {
-        DataSnapshot dataSnapshot = event.snapshot;
-        Map<dynamic, dynamic> values =
-            dataSnapshot.value as Map<dynamic, dynamic>;
-
-        if (values.isNotEmpty) {
-          BotToast.closeAllLoading();
-          values.forEach((key, value) {
-            reports.add({
-              'id': key,
-              ...value['data'],
-            });
-
-          });
-
-          if (kDebugMode) {
-            print('REPORTS $reports');
-          }
-        }
-      }).onError((e) {
-        showToast(msg: 'Fetch Report Error: $e', isError: true);
-      });
-
-      //* Return the list of documents as QueryDocumentSnapshot
-      return reports;
-    } catch (e) {
-      log('FETCH REPORT BY USER ERROR: ${e.toString()}');
-      rethrow; // Rethrow the error for handling in the UI
-    }
-  }
-
   Future<dynamic> updateReport({
     required String reportId,
-    required String title,
-    String? reportDescription,
     required String longitude,
     required String latitude,
+    required String title,
+    required String address,
+    required String reportDescription,
+    required String status,
   }) async {
+    BotToast.showLoading();
     try {
-      await _databaseReference.child(reportId).update({
+      await databaseReference.child(reportId).update({
         'data': {
           'title': title,
           'reportDescription': reportDescription,
           'longitude': longitude,
           'latitude': latitude,
+          'address': address,
+          'reportStatus': status,
+          'createdAt': DateTime.now().toString(),
         },
+      }).whenComplete(() {
+        BotToast.closeAllLoading();
       });
+
       return true; // Indicate success
     } catch (e) {
       return e.toString(); // Return error message if any
@@ -153,7 +125,7 @@ class Report {
 
   Future<dynamic> deleteReport(String reportId) async {
     try {
-      await _databaseReference.child(reportId).remove();
+      await databaseReference.child(reportId).remove();
       return true; // Indicate success
     } catch (e) {
       return e.toString(); // Return error message if any

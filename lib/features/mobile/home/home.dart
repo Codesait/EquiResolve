@@ -463,9 +463,11 @@ class _Reports extends StatelessWidget {
                           style: ListTileStyle.list,
                           leading: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: report['reportStatus'] != 'AWAITING'
-                                  ? Colors.green.withOpacity(.5)
-                                  : Colors.red.withOpacity(.5),
+                              color: report['reportStatus'] == 'AWAITING'
+                                  ? Colors.red.withOpacity(.5)
+                                  : report['reportStatus'] == 'RESOLVED'
+                                      ? Colors.green.withOpacity(.5)
+                                      : Colors.orange.withOpacity(.5),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: const SizedBox.square(
@@ -501,9 +503,11 @@ class _Reports extends StatelessWidget {
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                   backgroundColor:
-                                      report['reportStatus'] != 'AWAITING'
-                                          ? Colors.green.withOpacity(.5)
-                                          : Colors.red.withOpacity(.5),
+                                      report['reportStatus'] == 'AWAITING'
+                                          ? Colors.red.withOpacity(.5)
+                                          : report['reportStatus'] == 'RESOLVED'
+                                              ? Colors.green.withOpacity(.5)
+                                              : Colors.orange.withOpacity(.5),
                                 ),
                               ),
                             ],

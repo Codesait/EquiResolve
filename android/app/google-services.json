@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "19738508514",
+    "firebase_url": "https://equiresolveapp-default-rtdb.firebaseio.com",
     "project_id": "equiresolveapp",
     "storage_bucket": "equiresolveapp.appspot.com"
   },
