@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'dart:developer';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:equiresolve/app/color.dart';
 import 'package:equiresolve/router/route_names.dart';
@@ -177,13 +179,18 @@ class _UserAuthState extends State<UserAuth> {
 
   void signIn() {
     AuthService()
-        .signIn(context,
-            email: emailController!.text.trim(),
-            password: passwordController!.text.trim())
+        .signIn(
+      context,
+      email: emailController!.text.trim(),
+      password: passwordController!.text.trim(),
+    )
         .then((value) {
-      context.pushReplacement(NamedRoutes.homePage.name);
+      if (value.toString().contains('UserCredential')) {
+        context.pushReplacementNamed(NamedRoutes.homePage.name);
+      }
+
       if (kDebugMode) {
-        print(value);
+        log('SIGN IN VALUE: $value');
       }
     }).whenComplete(() {
       BotToast.closeAllLoading();
@@ -196,10 +203,11 @@ class _UserAuthState extends State<UserAuth> {
             email: emailController!.text.trim(),
             password: passwordController!.text.trim())
         .then((value) {
-          
-      context.pushReplacement(NamedRoutes.homePage.name);
+      if (value.toString().contains('UserCredential')) {
+        context.pushReplacementNamed(NamedRoutes.homePage.name);
+      }
       if (kDebugMode) {
-        print('val: $value');
+        log('SIGN IN VALUE: $value');
       }
     }).whenComplete(() {
       BotToast.closeAllLoading();

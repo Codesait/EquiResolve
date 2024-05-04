@@ -3,23 +3,23 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>461536806556-2q9iho4rhp5unh9n2jvlj9unejci6oan.apps.googleusercontent.com</string>
+	<string>19738508514-cif9mkedb68f281efcn4apoeg1ckimj6.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.461536806556-2q9iho4rhp5unh9n2jvlj9unejci6oan</string>
+	<string>com.googleusercontent.apps.19738508514-cif9mkedb68f281efcn4apoeg1ckimj6</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>461536806556-nb6fhv61e70mqspdtsepad603jiqigat.apps.googleusercontent.com</string>
+	<string>19738508514-td2o8n39cnvqau9curmq23tt8g9b49h8.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyAYU8TjgoYXyHTeaSOFlv-br13ahfOg2p0</string>
+	<string>AIzaSyDTBRvDblhjXi8nlN9gWB5MAFsBGQ3Y4FU</string>
 	<key>GCM_SENDER_ID</key>
-	<string>461536806556</string>
+	<string>19738508514</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.example.equiresolve</string>
 	<key>PROJECT_ID</key>
-	<string>equiresolve</string>
+	<string>equiresolveapp</string>
 	<key>STORAGE_BUCKET</key>
-	<string>equiresolve.appspot.com</string>
+	<string>equiresolveapp.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -31,6 +31,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:461536806556:ios:78d1087634c744a7ac0f59</string>
+	<string>1:19738508514:ios:a0e7eeb5ad595dfa41b2bb</string>
+	<key>DATABASE_URL</key>
+	<string>https://equiresolveapp-default-rtdb.firebaseio.com</string>
 </dict>
 </plist>

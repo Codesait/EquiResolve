@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:bot_toast/bot_toast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +11,9 @@ class AuthService {
   final firebaseAuth = FirebaseAuth.instance;
 
   get user => firebaseAuth.currentUser;
+
+  User? _appUser;
+  User? get appUser => _appUser;
 
   void showSnackbarMessage(
     BuildContext context,
@@ -74,10 +79,72 @@ class AuthService {
   }
 
   //SIGN OUT METHOD
-  Future signOut() async {
-    await firebaseAuth.signOut();
-    if (kDebugMode) {
-      print('signout');
+  Future signOut(BuildContext context) async {
+    try {
+      return await firebaseAuth.signOut();
+    } catch (e) {
+      if (kDebugMode) {
+        log('signout error: $e');
+      }
     }
+    
+    
+    
+  }
+
+  Future<void> checkForCurrentUser() async {
+    BotToast.showLoading();
+    try {
+      firebaseAuth.authStateChanges().listen(
+        (account) {
+          if (account != null) {
+            _appUser = account;
+
+            BotToast.closeAllLoading();
+
+            if (kDebugMode) {
+              print('USER SIGNED IN $user');
+            }
+          }
+        },
+        onDone: () {
+          if (kDebugMode) {
+            print('CHECKING FOR EXISTING USER DONE');
+          }
+          BotToast.closeAllLoading();
+        },
+        onError: (e) {
+          if (kDebugMode) {
+            print('SIGN IN ERROR: $e');
+          }
+          BotToast.closeAllLoading();
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error $e');
+      }
+      BotToast.closeAllLoading();
+    }
+  }
+
+  void customLoader() {
+    BotToast.showCustomLoading(toastBuilder: (_) {
+      return Container(
+        height: 130,
+        padding: const EdgeInsets.all(9),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Text('...getting location data'),
+          ],
+        ),
+      );
+    });
   }
 }

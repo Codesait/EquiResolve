@@ -80,7 +80,7 @@ class _IntroScreenState extends State<IntroScreen> {
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: SingleChildScrollView(
-            child: checkingUser
+            child: !checkingUser
                 ? Column(
                     children: [
                       const CircularProgressIndicator(),

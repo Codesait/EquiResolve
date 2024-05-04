@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -49,12 +46,15 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAzybbXqNDytu1rPbmWnE_TqImX2zud0Ug',
-    appId: '1:19738508514:android:c284393c909f2c4541b2bb',
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyAk0OJuEUSCucvT1aXn9azo-Reio_g9d6w',
+    appId: '1:19738508514:web:8f552181d6bd814841b2bb',
     messagingSenderId: '19738508514',
     projectId: 'equiresolveapp',
+    authDomain: 'equiresolveapp.firebaseapp.com',
+    databaseURL: 'https://equiresolveapp-default-rtdb.firebaseio.com',
     storageBucket: 'equiresolveapp.appspot.com',
+    measurementId: 'G-7J8YQHRDTK',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -62,7 +62,20 @@ class DefaultFirebaseOptions {
     appId: '1:19738508514:ios:a0e7eeb5ad595dfa41b2bb',
     messagingSenderId: '19738508514',
     projectId: 'equiresolveapp',
+    databaseURL: 'https://equiresolveapp-default-rtdb.firebaseio.com',
     storageBucket: 'equiresolveapp.appspot.com',
+    androidClientId: '19738508514-td2o8n39cnvqau9curmq23tt8g9b49h8.apps.googleusercontent.com',
+    iosClientId: '19738508514-cif9mkedb68f281efcn4apoeg1ckimj6.apps.googleusercontent.com',
     iosBundleId: 'com.example.equiresolve',
   );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyAzybbXqNDytu1rPbmWnE_TqImX2zud0Ug',
+    appId: '1:19738508514:android:c284393c909f2c4541b2bb',
+    messagingSenderId: '19738508514',
+    projectId: 'equiresolveapp',
+    databaseURL: 'https://equiresolveapp-default-rtdb.firebaseio.com',
+    storageBucket: 'equiresolveapp.appspot.com',
+  );
+
 }
